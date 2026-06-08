@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RTO CC · QA Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #14171e;
+    --surface2: #1c2029;
+    --border: #252a36;
+    --text: #e8eaf0;
+    --muted: #6b7280;
+    --accent: #7c6af7;
+    --accent2: #5ee7c0;
+    --gold: #f5c842;
+    --red: #f25c5c;
+    --orange: #f59342;
+    --green: #5ee7a0;
+    --target: #7c6af7;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  /* HEADER */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 32px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .logo-badge {
+    width: 40px; height: 40px;
+    background: var(--accent);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    color: white;
+  }
+  .header-title { font-family: 'DM Serif Display', serif; font-size: 22px; letter-spacing: -0.3px; }
+  .header-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  .header-stats { display: flex; gap: 32px; }
+  .hstat { text-align: right; }
+  .hstat-val { font-size: 22px; font-weight: 600; color: var(--accent2); }
+  .hstat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* NAV TABS */
+  .nav-tabs {
+    display: flex;
+    gap: 2px;
+    padding: 12px 32px 0;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .tab {
+    padding: 8px 18px;
+    border-radius: 6px 6px 0 0;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--muted);
+    transition: all 0.2s;
+    border: 1px solid transparent;
+    border-bottom: none;
+    margin-bottom: -1px;
+    background: transparent;
+  }
+  .tab:hover { color: var(--text); background: var(--surface2); }
+  .tab.active {
+    color: var(--text);
+    background: var(--bg);
+    border-color: var(--border);
+    border-bottom-color: var(--bg);
+  }
+
+  /* FILTER BAR */
+  .filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 32px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+  }
+  .filter-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .agent-select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    outline: none;
+    min-width: 220px;
+  }
+  .agent-select:focus { border-color: var(--accent); }
+  .reset-btn {
+    padding: 7px 14px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+  }
+  .reset-btn:hover { border-color: var(--accent); color: var(--text); }
+  .target-pill {
+    margin-left: auto;
+    padding: 5px 12px;
+    background: rgba(124,106,247,0.15);
+    border: 1px solid rgba(124,106,247,0.3);
+    border-radius: 20px;
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  /* MAIN LAYOUT */
+  .main { padding: 24px 32px; }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* GRID LAYOUTS */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .col-span-2 { grid-column: span 2; }
+
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+  }
+  .card-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--muted);
+    margin-bottom: 16px;
+    font-weight: 500;
+  }
+
+  /* KPI TILES */
+  .kpi-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 20px; }
+  .kpi {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 22px;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent);
+    border-radius: 14px 14px 0 0;
+  }
+  .kpi.green::before { background: var(--green); }
+  .kpi.gold::before { background: var(--gold); }
+  .kpi.red::before { background: var(--red); }
+  .kpi-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+  .kpi-val { font-size: 32px; font-weight: 600; margin: 6px 0 2px; line-height: 1; }
+  .kpi-sub { font-size: 11px; color: var(--muted); }
+
+  /* OVERVIEW TABLE */
+  .agent-table { width: 100%; border-collapse: collapse; }
+  .agent-table th {
+    text-align: left;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--muted);
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 500;
+  }
+  .agent-table th.num { text-align: right; }
+  .agent-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(37,42,54,0.5);
+    font-size: 13px;
+    transition: background 0.15s;
+  }
+  .agent-table tr:hover td { background: var(--surface2); }
+  .agent-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .rank { font-size: 11px; color: var(--muted); font-weight: 600; width: 28px; }
+  .agent-name { font-weight: 500; color: var(--text); cursor: pointer; }
+  .agent-name:hover { color: var(--accent2); }
+
+  /* SCORE CHIP */
+  .score-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    min-width: 56px;
+  }
+  .score-chip.excellent { background: rgba(94,231,160,0.15); color: var(--green); border: 1px solid rgba(94,231,160,0.3); }
+  .score-chip.good { background: rgba(94,231,192,0.1); color: var(--accent2); border: 1px solid rgba(94,231,192,0.25); }
+  .score-chip.below { background: rgba(245,147,66,0.1); color: var(--orange); border: 1px solid rgba(245,147,66,0.25); }
+  .score-chip.poor { background: rgba(242,92,92,0.1); color: var(--red); border: 1px solid rgba(242,92,92,0.25); }
+
+  /* PROGRESS BAR */
+  .prog-wrap { display: flex; align-items: center; gap: 10px; }
+  .prog-bar { flex: 1; height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+  .prog-fill { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
+  .prog-val { font-size: 12px; font-variant-numeric: tabular-nums; color: var(--muted); width: 36px; text-align: right; }
+
+  /* INLINE CHART */
+  .sparkline { display: block; }
+
+  /* TREND CHART */
+  .chart-area { position: relative; width: 100%; }
+  svg text { font-family: 'DM Sans', sans-serif; }
+
+  /* CRITERIA BARS */
+  .criteria-row { margin-bottom: 14px; }
+  .criteria-label { font-size: 12px; color: var(--text); margin-bottom: 5px; display: flex; justify-content: space-between; }
+  .criteria-label span { color: var(--muted); font-size: 11px; }
+  .stacked-bar { height: 8px; border-radius: 4px; overflow: hidden; display: flex; }
+  .sb-excellent { background: var(--green); }
+  .sb-meets { background: var(--accent); }
+  .sb-needs { background: var(--orange); }
+  .sb-unacceptable { background: var(--red); }
+
+  /* LEGEND */
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 2px; }
+
+  /* RECENT AUDITS */
+  .audit-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(37,42,54,0.6);
+  }
+  .audit-row:last-child { border-bottom: none; }
+  .audit-date { font-size: 11px; color: var(--muted); min-width: 48px; padding-top: 2px; }
+  .audit-body { flex: 1; min-width: 0; }
+  .audit-ticket { font-size: 12px; font-weight: 600; color: var(--accent2); }
+  .audit-type { font-size: 11px; color: var(--muted); }
+  .audit-comment { font-size: 12px; color: var(--text); margin-top: 4px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .audit-score { min-width: 52px; display: flex; align-items: flex-start; justify-content: flex-end; padding-top: 2px; }
+
+  /* AGENT DETAIL HEADER */
+  .agent-hero {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin-bottom: 20px;
+  }
+  .agent-avatar {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    color: white;
+    flex-shrink: 0;
+  }
+  .agent-hero-name { font-family: 'DM Serif Display', serif; font-size: 24px; }
+  .agent-hero-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .agent-hero-stats { margin-left: auto; display: flex; gap: 32px; }
+  .ahs { text-align: center; }
+  .ahs-val { font-size: 24px; font-weight: 600; }
+  .ahs-label { font-size: 11px; color: var(--muted); }
+
+  /* EMPTY STATE */
+  .empty { text-align: center; color: var(--muted); padding: 48px; font-size: 14px; }
+
+  /* TOOLTIP */
+  .tooltip-wrap { position: relative; display: inline-block; }
+  .tooltip-text {
+    display: none;
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    white-space: nowrap;
+    z-index: 999;
+    pointer-events: none;
+  }
+  .tooltip-wrap:hover .tooltip-text { display: block; }
+
+  .section-gap { margin-bottom: 20px; }
+
+  /* Responsive fix */
+  @media (max-width: 900px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .kpi-grid { grid-template-columns: 1fr 1fr; }
+    .agent-hero { flex-wrap: wrap; }
+    .agent-hero-stats { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="logo-badge">Q</div>
+    <div>
+      <div class="header-title">QA Performance Dashboard</div>
+      <div class="header-sub">RTO Control Centre · Oct 2025 – Jun 2026</div>
+    </div>
+  </div>
+  <div class="header-stats">
+    <div class="hstat">
+      <div class="hstat-val" id="hdr-total">1,524</div>
+      <div class="hstat-label">Total Audits</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val" id="hdr-avg">87.4%</div>
+      <div class="hstat-label">Overall Avg</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val" id="hdr-agents">16</div>
+      <div class="hstat-label">Agents</div>
+    </div>
+  </div>
+</div>
+
+<div class="nav-tabs">
+  <div class="tab active" onclick="showPage('overview')">Overview</div>
+  <div class="tab" onclick="showPage('agent')">Agent Detail</div>
+  <div class="tab" onclick="showPage('trends')">Trends</div>
+  <div class="tab" onclick="showPage('criteria')">Criteria Breakdown</div>
+</div>
+
+<div class="filter-bar">
+  <span class="filter-label">Agent</span>
+  <select class="agent-select" id="agentSelect" onchange="onAgentChange()">
+    <option value="ALL">All Agents</option>
+  </select>
+  <button class="reset-btn" onclick="resetAgent()">Reset</button>
+  <div class="target-pill">⚑ Target: 85%</div>
+</div>
+
+<div class="main">
+
+  <!-- OVERVIEW PAGE -->
+  <div class="page active" id="page-overview">
+    <div class="kpi-grid" id="kpi-grid"></div>
+    <div class="card">
+      <div class="card-title">Agent Rankings</div>
+      <table class="agent-table">
+        <thead>
+          <tr>
+            <th style="width:32px">#</th>
+            <th>Agent</th>
+            <th class="num">Avg Score</th>
+            <th class="num">Audits</th>
+            <th class="num">% ≥ 85</th>
+            <th class="num">Best</th>
+            <th class="num">Worst</th>
+            <th style="min-width:120px">Score Distribution</th>
+          </tr>
+        </thead>
+        <tbody id="overview-table"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- AGENT DETAIL PAGE -->
+  <div class="page" id="page-agent">
+    <div id="agent-hero"></div>
+    <div class="grid-2 section-gap">
+      <div class="card">
+        <div class="card-title">Monthly Score Trend</div>
+        <div id="agent-trend-chart"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Criteria Breakdown</div>
+        <div class="legend" style="margin-bottom:14px">
+          <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Excellent</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>Meets Expectations</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div>Needs Improvement</div>
+          <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Unacceptable</div>
+        </div>
+        <div id="agent-criteria"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Recent Audits (Last 10)</div>
+      <div id="agent-recent"></div>
+    </div>
+  </div>
+
+  <!-- TRENDS PAGE -->
+  <div class="page" id="page-trends">
+    <div class="card section-gap">
+      <div class="card-title" id="trend-title">Average QA Score by Month — All Agents</div>
+      <div id="main-trend-chart"></div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Score Distribution by Agent</div>
+        <div id="dist-chart"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Top Alert Types by Avg Score</div>
+        <div id="alert-chart"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CRITERIA PAGE -->
+  <div class="page" id="page-criteria">
+    <div class="card section-gap">
+      <div class="card-title">Criteria Performance Comparison — All Agents</div>
+      <div class="legend" style="margin-bottom:16px">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Excellent</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>Meets Expectations</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--orange)"></div>Needs Improvement</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Unacceptable</div>
+      </div>
+      <div id="criteria-comparison"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRgSANN14CW33HZHooafbqWSbk0PueeP0tUMKNEMO5lWDup01v1sef4eIs-flzqGgqrRf_1LLDFdnLh/pub?gid=627172590&single=true&output=csv";
+
+// Loading overlay
+document.body.insertAdjacentHTML('afterbegin', `
+  <div id="loading-overlay" style="position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:16px">
+    <div style="font-family:'DM Serif Display',serif;font-size:28px;color:var(--accent2)">QA Dashboard</div>
+    <div id="loading-msg" style="font-size:13px;color:var(--muted)">Loading data from Google Sheets…</div>
+    <div style="width:200px;height:3px;background:var(--surface2);border-radius:2px;overflow:hidden">
+      <div id="loading-bar" style="height:100%;width:0%;background:var(--accent2);transition:width 0.4s ease;border-radius:2px"></div>
+    </div>
+  </div>
+`);
+
+function setLoadingMsg(msg, pct) {
+  document.getElementById('loading-msg').textContent = msg;
+  document.getElementById('loading-bar').style.width = pct + '%';
+}
+
+// CSV parser (handles quoted fields)
+function parseCSV(text) {
+  const rows = [];
+  const lines = text.split('\n');
+  for (let line of lines) {
+    if (!line.trim()) continue;
+    const cols = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (ch === '"') { inQ = !inQ; }
+      else if (ch === ',' && !inQ) { cols.push(cur); cur = ''; }
+      else { cur += ch; }
+    }
+    cols.push(cur);
+    rows.push(cols);
+  }
+  return rows;
+}
+
+function toNum(v) { const n = parseFloat(v); return isNaN(n) ? null : n; }
+
+function emailToName(email) {
+  const local = (email || '').split('@')[0];
+  const parts = local.split('.');
+  return parts.slice(0,2).map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
+}
+
+function scoreColor(s) {
+  if (s >= 95) return 'var(--green)';
+  if (s >= 85) return 'var(--accent2)';
+  if (s >= 75) return 'var(--orange)';
+  return 'var(--red)';
+}
+
+function fmtMonthLabel(m) {
+  const [y, mo] = m.split('-');
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return months[parseInt(mo)-1] + ' ' + y.slice(2);
+}
+
+function monthKey(dateStr) {
+  // dateStr like "10/4/2025" or "2025-10-04"
+  if (!dateStr) return null;
+  let d;
+  if (dateStr.includes('/')) {
+    const parts = dateStr.split('/');
+    if (parts.length === 3) {
+      // M/D/YYYY
+      d = new Date(parseInt(parts[2]), parseInt(parts[0])-1, parseInt(parts[1]));
+    }
+  } else {
+    d = new Date(dateStr);
+  }
+  if (!d || isNaN(d)) return null;
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+}
+
+function fmtDate(dateStr) {
+  if (!dateStr) return '';
+  let d;
+  if (dateStr.includes('/')) {
+    const parts = dateStr.split('/');
+    d = new Date(parseInt(parts[2]), parseInt(parts[0])-1, parseInt(parts[1]));
+  } else {
+    d = new Date(dateStr);
+  }
+  if (!d || isNaN(d)) return dateStr;
+  return d.toLocaleDateString('en-US', {month:'short', day:'numeric'});
+}
+
+const CRITERIA_COLS = [10,11,12,13,14,15,16];
+const CRITERIA_LABELS = ['Deep Diving Skills','Op. Accuracy: Follow-up','Critical Thinking','Communication','Op. Accuracy: Jira Doc','Op. Accuracy: Jira Closure','Prioritization Skills'];
+const RATING_ORDER = ['Excellent','Meets Expectations','Needs Improvement','Unacceptable'];
+
+function processRows(rows) {
+  const audits = [];
+  for (let row of rows) {
+    const email = (row[0]||'').trim();
+    if (!email || !email.includes('@')) continue;
+    const score = toNum(row[4]);
+    if (score === null) continue;
+    const dateStr = (row[3]||'').trim();
+    const mk = monthKey(dateStr);
+    if (!mk) continue;
+    audits.push({
+      email, name: emailToName(email),
+      ticket: row[1]||'',
+      alert_type: (row[2]||'').trim(),
+      date: dateStr, month: mk,
+      score,
+      week: toNum(row[5]),
+      comments: (row[7]||'').trim() || null,
+      auditor: row[9]||'',
+      criteria: CRITERIA_COLS.map(c => (row[c]||'').trim()||null),
+      beyond: (row[17]||'').trim()||null
+    });
+  }
+  return audits;
+}
+
+function buildData(audits) {
+  const agentMap = {};
+  for (let a of audits) {
+    if (!agentMap[a.name]) agentMap[a.name] = [];
+    agentMap[a.name].push(a);
+  }
+  const agent_names = Object.keys(agentMap).sort();
+
+  // Overview
+  const overview = agent_names.map(name => {
+    const subs = agentMap[name];
+    const scores = subs.map(a=>a.score);
+    const avg = +(scores.reduce((s,v)=>s+v,0)/scores.length).toFixed(1);
+    const pct85 = +(scores.filter(s=>s>=85).length/scores.length*100).toFixed(1);
+    return { name, avg, count: subs.length, pct85,
+      best: Math.max(...scores), worst: Math.min(...scores) };
+  }).sort((a,b)=>b.avg-a.avg);
+
+  // All months sorted
+  const monthSet = new Set(audits.map(a=>a.month));
+  const all_months = [...monthSet].sort();
+
+  // Monthly all
+  const monthlyAllMap = {};
+  for (let a of audits) {
+    if (!monthlyAllMap[a.month]) monthlyAllMap[a.month] = [];
+    monthlyAllMap[a.month].push(a.score);
+  }
+  const monthly_all = all_months.map(m => ({
+    month: m, avg: +(monthlyAllMap[m].reduce((s,v)=>s+v,0)/monthlyAllMap[m].length).toFixed(1)
+  }));
+
+  // Monthly per agent
+  const monthly_agent = {};
+  for (let name of agent_names) {
+    const mMap = {};
+    for (let a of agentMap[name]) {
+      if (!mMap[a.month]) mMap[a.month] = [];
+      mMap[a.month].push(a.score);
+    }
+    monthly_agent[name] = all_months.filter(m=>mMap[m]).map(m => ({
+      month: m, avg: +(mMap[m].reduce((s,v)=>s+v,0)/mMap[m].length).toFixed(1)
+    }));
+  }
+
+  // Criteria
+  const criteria_data = {};
+  for (let name of agent_names) {
+    criteria_data[name] = CRITERIA_LABELS.map((label, ci) => {
+      const vals = agentMap[name].map(a=>a.criteria[ci]).filter(Boolean);
+      const total = vals.length;
+      const breakdown = {};
+      for (let r of RATING_ORDER) breakdown[r] = total ? +(vals.filter(v=>v===r).length/total*100).toFixed(1) : 0;
+      return { label, breakdown, total };
+    });
+  }
+
+  // Alert perf
+  const alertMap = {};
+  for (let a of audits) {
+    if (!alertMap[a.alert_type]) alertMap[a.alert_type] = [];
+    alertMap[a.alert_type].push(a.score);
+  }
+  const alert_perf = Object.entries(alertMap).map(([t,scores]) => ({
+    alert_type: t,
+    avg: +(scores.reduce((s,v)=>s+v,0)/scores.length).toFixed(1),
+    count: scores.length
+  })).sort((a,b)=>b.avg-a.avg).slice(0,15);
+
+  // Recent (last 10 per agent, sorted by date desc)
+  const recent = {};
+  for (let name of agent_names) {
+    const sorted = [...agentMap[name]].sort((a,b)=>{
+      const da = new Date(a.date.includes('/')?a.date.split('/')[2]+'-'+a.date.split('/')[0].padStart(2,'0')+'-'+a.date.split('/')[1].padStart(2,'0'):a.date);
+      const db = new Date(b.date.includes('/')?b.date.split('/')[2]+'-'+b.date.split('/')[0].padStart(2,'0')+'-'+b.date.split('/')[1].padStart(2,'0'):b.date);
+      return db-da;
+    });
+    recent[name] = sorted.slice(0,10).map(a=>({
+      date: fmtDate(a.date), ticket:a.ticket, alert_type:a.alert_type, score:a.score, comments:a.comments
+    }));
+  }
+
+  // Beyond
+  const beyond = {};
+  for (let name of agent_names) {
+    beyond[name] = agentMap[name].filter(a=>a.beyond).length;
+  }
+
+  return {
+    overview, monthly_all, monthly_agent, all_months,
+    criteria_data, alert_perf, recent, beyond, agent_names,
+    criteria_labels: CRITERIA_LABELS,
+    total_audits: audits.length,
+    overall_avg: +(audits.reduce((s,a)=>s+a.score,0)/audits.length).toFixed(1)
+  };
+}
+
+async function loadDashboard() {
+  try {
+    setLoadingMsg('Fetching data from Google Sheets…', 20);
+    // Use a CORS proxy to fetch the CSV
+    const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(CSV_URL);
+    const res = await fetch(proxyUrl);
+    if (!res.ok) throw new Error('Failed to fetch: ' + res.status);
+    setLoadingMsg('Parsing CSV data…', 50);
+    const text = await res.text();
+    const rows = parseCSV(text);
+    setLoadingMsg('Building dashboard…', 75);
+    const audits = processRows(rows);
+    if (audits.length === 0) throw new Error('No valid audit rows found in the sheet.');
+    const DATA = buildData(audits);
+    setLoadingMsg('Rendering…', 90);
+    // Inject DATA into global scope
+    window.DATA = DATA;
+    // Update header stats
+    document.getElementById('hdr-total').textContent = DATA.total_audits.toLocaleString();
+    document.getElementById('hdr-avg').textContent = DATA.overall_avg + '%';
+    document.getElementById('hdr-agents').textContent = DATA.agent_names.length;
+    // Populate agent select
+    const sel = document.getElementById('agentSelect');
+    sel.innerHTML = '<option value="ALL">All Agents</option>';
+    DATA.agent_names.forEach(n => {
+      const o = document.createElement('option');
+      o.value = n; o.textContent = n; sel.appendChild(o);
+    });
+    // Add last updated stamp
+    document.querySelector('.header-sub').textContent = 'RTO Control Centre · Last updated: ' + new Date().toLocaleString('en-GB', {day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+    setTimeout(() => {
+      document.getElementById('loading-overlay').style.opacity = '0';
+      document.getElementById('loading-overlay').style.transition = 'opacity 0.4s';
+      setTimeout(() => document.getElementById('loading-overlay').remove(), 400);
+      render();
+    }, 200);
+  } catch(err) {
+    document.getElementById('loading-msg').textContent = '⚠ Error: ' + err.message;
+    document.getElementById('loading-bar').style.background = 'var(--red)';
+    document.getElementById('loading-bar').style.width = '100%';
+    console.error(err);
+  }
+}
+
+loadDashboard();
+
+
+let currentAgent = 'ALL';
+
+// Populate agent select
+const sel = document.getElementById('agentSelect');
+DATA.agent_names.forEach(n => {
+  const o = document.createElement('option');
+  o.value = n; o.textContent = n;
+  sel.appendChild(o);
+});
+
+function onAgentChange() {
+  currentAgent = sel.value;
+  render();
+}
+function resetAgent() {
+  sel.value = 'ALL';
+  currentAgent = 'ALL';
+  render();
+}
+
+function scoreClass(s) {
+  if (s >= 95) return 'excellent';
+  if (s >= 85) return 'good';
+  if (s >= 75) return 'below';
+  return 'poor';
+}
+function scoreColor(s) {
+  if (s >= 95) return 'var(--green)';
+  if (s >= 85) return 'var(--accent2)';
+  if (s >= 75) return 'var(--orange)';
+  return 'var(--red)';
+}
+
+function fmtMonth(m) {
+  const [y, mo] = m.split('-');
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return months[parseInt(mo)-1] + ' ' + y.slice(2);
+}
+
+function initials(name) {
+  return name.split(' ').map(p=>p[0]).join('').slice(0,2).toUpperCase();
+}
+
+// ---- RENDER KPIs ----
+function renderKPIs() {
+  let agents = currentAgent === 'ALL' ? DATA.overview : DATA.overview.filter(a=>a.name===currentAgent);
+  let totalAudits = agents.reduce((s,a)=>s+a.count,0);
+  let avgScore = agents.length ? (agents.reduce((s,a)=>s+a.avg*a.count,0)/totalAudits).toFixed(1) : '-';
+  let pctAbove = agents.length ? (agents.reduce((s,a)=>s+a.pct85*a.count,0)/totalAudits).toFixed(1) : '-';
+  let topAgent = currentAgent === 'ALL' ? (agents[0] ? agents[0].name.split(' ')[0] : '-') : agents[0].name.split(' ')[0];
+
+  document.getElementById('kpi-grid').innerHTML = `
+    <div class="kpi">
+      <div class="kpi-label">Total Audits</div>
+      <div class="kpi-val" style="color:var(--accent2)">${totalAudits.toLocaleString()}</div>
+      <div class="kpi-sub">${currentAgent==='ALL'?'Across all agents':'This agent'}</div>
+    </div>
+    <div class="kpi green">
+      <div class="kpi-label">Average Score</div>
+      <div class="kpi-val" style="color:${scoreColor(parseFloat(avgScore))}">${avgScore}%</div>
+      <div class="kpi-sub">Target: 85%</div>
+    </div>
+    <div class="kpi gold">
+      <div class="kpi-label">% Audits ≥ 85</div>
+      <div class="kpi-val" style="color:var(--gold)">${pctAbove}%</div>
+      <div class="kpi-sub">At or above target</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-label">${currentAgent==='ALL'?'Top Performer':'Rank'}</div>
+      <div class="kpi-val" style="color:var(--accent);font-size:20px">${currentAgent==='ALL'?topAgent:'#'+( DATA.overview.findIndex(a=>a.name===currentAgent)+1)}</div>
+      <div class="kpi-sub">${currentAgent==='ALL'?'Highest avg score':'Out of '+DATA.overview.length+' agents'}</div>
+    </div>
+  `;
+}
+
+// ---- RENDER OVERVIEW TABLE ----
+function renderOverviewTable() {
+  let agents = currentAgent === 'ALL' ? DATA.overview : DATA.overview.filter(a=>a.name===currentAgent);
+  const tbody = document.getElementById('overview-table');
+  tbody.innerHTML = '';
+  agents.forEach((a, i) => {
+    const globalRank = DATA.overview.findIndex(x=>x.name===a.name)+1;
+    tbody.innerHTML += `
+      <tr>
+        <td class="rank">${globalRank}</td>
+        <td><span class="agent-name" onclick="drillAgent('${a.name}')">${a.name}</span></td>
+        <td class="num"><span class="score-chip ${scoreClass(a.avg)}">${a.avg}%</span></td>
+        <td class="num" style="color:var(--muted)">${a.count}</td>
+        <td class="num">
+          <div class="prog-wrap">
+            <div class="prog-bar"><div class="prog-fill" style="width:${a.pct85}%;background:${scoreColor(a.pct85)}"></div></div>
+            <span class="prog-val">${a.pct85}%</span>
+          </div>
+        </td>
+        <td class="num" style="color:var(--green)">${a.best}%</td>
+        <td class="num" style="color:${a.worst<70?'var(--red)':'var(--muted)'}">${a.worst}%</td>
+        <td>${renderSparkline(a.name, 80, 18)}</td>
+      </tr>
+    `;
+  });
+}
+
+function renderSparkline(name, w, h) {
+  const pts = DATA.monthly_agent[name] || [];
+  if (pts.length < 2) return '<span style="color:var(--muted);font-size:11px">—</span>';
+  const vals = pts.map(p=>p.avg);
+  const min = Math.min(...vals, 60), max = Math.max(...vals, 100);
+  const xStep = w / (vals.length-1);
+  const points = vals.map((v,i) => `${i*xStep},${h - ((v-min)/(max-min||1))*(h-4)+2}`).join(' ');
+  const color = vals[vals.length-1] >= 85 ? '#5ee7c0' : '#f59342';
+  return `<svg width="${w}" height="${h}" class="sparkline"><polyline points="${points}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linejoin="round"/><line x1="0" y1="${h-((85-min)/(max-min||1))*(h-4)+2}" x2="${w}" y2="${h-((85-min)/(max-min||1))*(h-4)+2}" stroke="rgba(124,106,247,0.4)" stroke-width="1" stroke-dasharray="2,2"/></svg>`;
+}
+
+// ---- TREND CHART (line chart via SVG) ----
+function renderLineSVG(container, datasets, allMonths, h, showTarget) {
+  const W = container.offsetWidth || 600;
+  const padL=48, padR=20, padT=16, padB=36;
+  const iW = W - padL - padR;
+  const iH = h - padT - padB;
+  const allVals = datasets.flatMap(d=>d.data.map(p=>p.avg));
+  const minV = Math.max(0, Math.min(...allVals)-5);
+  const maxV = Math.min(100, Math.max(...allVals)+5);
+
+  const xPos = (i) => padL + (allMonths.length>1 ? i/(allMonths.length-1)*iW : iW/2);
+  const yPos = (v) => padT + iH - ((v-minV)/(maxV-minV||1))*iH;
+
+  let svg = `<svg width="100%" height="${h}" viewBox="0 0 ${W} ${h}" xmlns="http://www.w3.org/2000/svg">`;
+
+  // Grid lines
+  [0,25,50,75,100].filter(v=>v>=minV&&v<=maxV).forEach(v=>{
+    const y = yPos(v);
+    svg += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>`;
+    svg += `<text x="${padL-6}" y="${y+4}" fill="#6b7280" font-size="10" text-anchor="end">${v}</text>`;
+  });
+
+  // Target line at 85
+  if (showTarget && 85>=minV && 85<=maxV) {
+    const y85 = yPos(85);
+    svg += `<line x1="${padL}" y1="${y85}" x2="${W-padR}" y2="${y85}" stroke="rgba(124,106,247,0.5)" stroke-width="1.5" stroke-dasharray="6,4"/>`;
+    svg += `<text x="${W-padR+2}" y="${y85+4}" fill="#7c6af7" font-size="9" text-anchor="start">85%</text>`;
+  }
+
+  // Month labels
+  allMonths.forEach((m, i) => {
+    svg += `<text x="${xPos(i)}" y="${h-6}" fill="#6b7280" font-size="10" text-anchor="middle">${fmtMonth(m)}</text>`;
+  });
+
+  const colors = ['#5ee7c0','#7c6af7','#f5c842','#f25c5c','#f59342','#a78bfa','#34d399','#fb923c','#60a5fa','#f472b6'];
+  
+  datasets.forEach((ds, di) => {
+    const color = ds.color || colors[di % colors.length];
+    const monthIdx = m => allMonths.indexOf(m);
+    const validPts = ds.data.filter(p => monthIdx(p.month) >= 0);
+    if (validPts.length < 1) return;
+
+    // Area fill
+    const areaPoints = validPts.map(p=>`${xPos(monthIdx(p.month))},${yPos(p.avg)}`).join(' ');
+    const firstX = xPos(monthIdx(validPts[0].month));
+    const lastX = xPos(monthIdx(validPts[validPts.length-1].month));
+    svg += `<polygon points="${firstX},${padT+iH} ${areaPoints} ${lastX},${padT+iH}" fill="${color}" opacity="0.06"/>`;
+
+    // Line
+    const linePoints = validPts.map(p=>`${xPos(monthIdx(p.month))},${yPos(p.avg)}`).join(' ');
+    svg += `<polyline points="${linePoints}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+
+    // Dots
+    validPts.forEach(p => {
+      svg += `<circle cx="${xPos(monthIdx(p.month))}" cy="${yPos(p.avg)}" r="3.5" fill="${color}" stroke="var(--bg)" stroke-width="1.5"/>`;
+    });
+  });
+
+  svg += '</svg>';
+  container.innerHTML = svg;
+}
+
+// ---- AGENT DETAIL ----
+function renderAgentDetail(name) {
+  const agent = DATA.overview.find(a=>a.name===name);
+  if (!agent) { document.getElementById('agent-hero').innerHTML='<div class="empty">Select an agent to view details.</div>'; return; }
+
+  const rank = DATA.overview.findIndex(a=>a.name===name)+1;
+  const beyond = DATA.beyond[name]||0;
+
+  document.getElementById('agent-hero').innerHTML = `
+    <div class="agent-hero">
+      <div class="agent-avatar">${initials(name)}</div>
+      <div>
+        <div class="agent-hero-name">${name}</div>
+        <div class="agent-hero-sub">Rank #${rank} of ${DATA.overview.length} · ${agent.count} audits</div>
+      </div>
+      <div class="agent-hero-stats">
+        <div class="ahs"><div class="ahs-val" style="color:${scoreColor(agent.avg)}">${agent.avg}%</div><div class="ahs-label">Avg Score</div></div>
+        <div class="ahs"><div class="ahs-val" style="color:var(--gold)">${agent.pct85}%</div><div class="ahs-label">≥ 85 Rate</div></div>
+        <div class="ahs"><div class="ahs-val" style="color:var(--green)">${agent.best}%</div><div class="ahs-label">Best</div></div>
+        <div class="ahs"><div class="ahs-val" style="color:${agent.worst<70?'var(--red)':'var(--muted)'}">${agent.worst}%</div><div class="ahs-label">Worst</div></div>
+        <div class="ahs"><div class="ahs-val" style="color:var(--accent2)">${beyond}</div><div class="ahs-label">Beyond Exp.</div></div>
+      </div>
+    </div>
+  `;
+
+  // Trend
+  const trendContainer = document.getElementById('agent-trend-chart');
+  const agentData = DATA.monthly_agent[name] || [];
+  setTimeout(() => {
+    renderLineSVG(trendContainer, [{data: agentData, color:'#5ee7c0'}], DATA.all_months, 200, true);
+  }, 50);
+
+  // Criteria
+  const criteriaData = DATA.criteria_data[name] || [];
+  const cc = document.getElementById('agent-criteria');
+  cc.innerHTML = criteriaData.map(c => {
+    const b = c.breakdown;
+    return `<div class="criteria-row">
+      <div class="criteria-label">${c.label} <span>${c.total} rated</span></div>
+      <div class="stacked-bar">
+        <div class="sb-excellent" style="width:${b.Excellent}%"></div>
+        <div class="sb-meets" style="width:${b['Meets Expectations']}%"></div>
+        <div class="sb-needs" style="width:${b['Needs Improvement']}%"></div>
+        <div class="sb-unacceptable" style="width:${b.Unacceptable}%"></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Recent
+  const recent = DATA.recent[name] || [];
+  const rc = document.getElementById('agent-recent');
+  if (!recent.length) { rc.innerHTML='<div class="empty">No recent audits.</div>'; return; }
+  rc.innerHTML = recent.map(r => `
+    <div class="audit-row">
+      <div class="audit-date">${r.date}</div>
+      <div class="audit-body">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="audit-ticket">${r.ticket}</span>
+          <span class="audit-type">${r.alert_type}</span>
+        </div>
+        ${r.comments ? `<div class="audit-comment">${r.comments}</div>` : ''}
+      </div>
+      <div class="audit-score"><span class="score-chip ${scoreClass(r.score)}">${r.score}%</span></div>
+    </div>
+  `).join('');
+}
+
+function drillAgent(name) {
+  sel.value = name;
+  currentAgent = name;
+  showPage('agent');
+  render();
+}
+
+// ---- TRENDS PAGE ----
+function renderTrends() {
+  // Main trend
+  const trendContainer = document.getElementById('main-trend-chart');
+  let title = 'Average QA Score by Month';
+
+  if (currentAgent === 'ALL') {
+    document.getElementById('trend-title').textContent = title + ' — All Agents';
+    setTimeout(() => renderLineSVG(trendContainer, [{data:DATA.monthly_all, color:'#5ee7c0'}], DATA.all_months, 240, true), 50);
+  } else {
+    document.getElementById('trend-title').textContent = title + ' — ' + currentAgent;
+    setTimeout(() => renderLineSVG(trendContainer, [{data:DATA.monthly_agent[currentAgent]||[], color:'#5ee7c0'}], DATA.all_months, 240, true), 50);
+  }
+
+  // Score dist chart (horizontal bars)
+  const agents = currentAgent==='ALL' ? DATA.overview : DATA.overview.filter(a=>a.name===currentAgent);
+  const dc = document.getElementById('dist-chart');
+  const maxW = dc.offsetWidth || 300;
+  dc.innerHTML = agents.map(a => `
+    <div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+        <span style="font-size:12px;color:var(--text);cursor:pointer" onclick="drillAgent('${a.name}')">${a.name}</span>
+        <span style="font-size:12px;color:var(--muted)">${a.avg}%</span>
+      </div>
+      <div class="prog-bar" style="height:8px">
+        <div class="prog-fill" style="width:${a.avg}%;background:${scoreColor(a.avg)}"></div>
+      </div>
+    </div>
+  `).join('');
+
+  // Alert type chart
+  const ac = document.getElementById('alert-chart');
+  const alerts = DATA.alert_perf.filter(a=>a.count>=5);
+  ac.innerHTML = alerts.map(a => `
+    <div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+        <span style="font-size:12px;color:var(--text)">${a.alert_type}</span>
+        <span style="font-size:12px;color:var(--muted)">${a.avg.toFixed(1)}% <span style="font-size:10px;color:var(--muted)">(${a.count})</span></span>
+      </div>
+      <div class="prog-bar" style="height:6px">
+        <div class="prog-fill" style="width:${Math.min(a.avg,100)}%;background:${scoreColor(a.avg)}"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ---- CRITERIA PAGE ----
+function renderCriteriaPage() {
+  const agents = currentAgent==='ALL' ? DATA.agent_names : [currentAgent];
+  const cc = document.getElementById('criteria-comparison');
+
+  let html = '';
+  DATA.criteria_labels.forEach(label => {
+    html += `<div style="margin-bottom:28px">
+      <div style="font-size:13px;font-weight:500;margin-bottom:10px;color:var(--text)">${label}</div>`;
+    agents.forEach(name => {
+      const cData = DATA.criteria_data[name];
+      if (!cData) return;
+      const c = cData.find(x=>x.label===label);
+      if (!c || c.total===0) return;
+      const b = c.breakdown;
+      html += `<div style="margin-bottom:7px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+          <span style="font-size:11px;color:var(--muted);cursor:pointer" onclick="drillAgent('${name}')">${name}</span>
+          <span style="font-size:10px;color:var(--muted)">${c.total} rated</span>
+        </div>
+        <div class="stacked-bar" style="height:10px">
+          <div class="sb-excellent" style="width:${b.Excellent}%"></div>
+          <div class="sb-meets" style="width:${b['Meets Expectations']}%"></div>
+          <div class="sb-needs" style="width:${b['Needs Improvement']}%"></div>
+          <div class="sb-unacceptable" style="width:${b.Unacceptable}%"></div>
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+  });
+  cc.innerHTML = html;
+}
+
+// ---- MAIN RENDER ----
+function render() {
+  renderKPIs();
+  renderOverviewTable();
+  const activePage = document.querySelector('.page.active');
+  if (activePage.id === 'page-agent') {
+    if (currentAgent !== 'ALL') renderAgentDetail(currentAgent);
+    else { document.getElementById('agent-hero').innerHTML='<div class="empty">Please select a specific agent from the filter above to view detailed information.</div>'; document.getElementById('agent-trend-chart').innerHTML=''; document.getElementById('agent-criteria').innerHTML=''; document.getElementById('agent-recent').innerHTML=''; }
+  }
+  if (activePage.id === 'page-trends') renderTrends();
+  if (activePage.id === 'page-criteria') renderCriteriaPage();
+}
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  event.target.classList.add('active');
+  render();
+}
+
+</script>
+</body>
+</html>
